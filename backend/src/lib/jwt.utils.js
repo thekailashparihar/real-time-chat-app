@@ -1,26 +1,22 @@
 import jwt from "jsonwebtoken";
 
 const generateToken = (userId, res) => {
+    const { JWT_SECRET_KEY } = process.env;
+
+    if (!JWT_SECRET_KEY) {
+        return res
+            .status(500)
+            .json({ message: "Secret key is not configured" });
+    }
     try {
-        const secretKey = process.env.JWT_SECRET_KEY;
+        const token = jwt.sign({ userId }, JWT_SECRET_KEY, { expiresIn: "7d" });
 
-        if (!secretKey) {
-            res.status(400).json({
-                message: "Secret key not found in environment variable",
-            });
-        }
-
-        const token = jwt.sign({ userId }, secretKey, {
-            expiresIn: "7d",
-        });
-
-        // prettier-ignore
         if (token) {
             res.cookie("jwt", token, {
-                maxAge: 7 * 24 * 60 * 60 * 1000,        // In Milisecond
-                httpOnly: true,                         // prevent XSS attack
-                sameSite: "strict",                     // prevent CSRF attack
-                secure: process.env.NODE_ENV === "development" ? false : true,  // http or https
+                maxAge: 7 * 24 * 60 * 60 * 1000,
+                httpOnly: true, // prevent XSS attack
+                sameSite: "strict", // prevent CSRF attack
+                secure: process.env.NODE_ENV === "development" ? false : true, // http or https
             });
 
             return token;

@@ -1,4 +1,5 @@
-import dotenv from "dotenv";
+import "dotenv/config";
+
 import express from "express";
 import cookieParser from "cookie-parser";
 
@@ -6,8 +7,6 @@ import authRoutes from "./src/routes/auth.routes.js";
 import messageRoutes from "./src/routes/message.routes.js";
 
 import { establishDBConnection } from "./src/lib/db.config.js";
-
-dotenv.config();
 
 const app = express();
 
