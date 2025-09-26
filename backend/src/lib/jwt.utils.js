@@ -1,13 +1,14 @@
 import jwt from "jsonwebtoken";
 
 const generateToken = (userId, res) => {
+    const { JWT_SECRET_KEY } = process.env;
+
+    if (!JWT_SECRET_KEY) {
+        return res
+            .status(500)
+            .json({ message: "Secret key is not configured" });
+    }
     try {
-        const { JWT_SECRET_KEY } = process.env;
-
-        if (!JWT_SECRET_KEY) {
-            res.status(400).json({ message: "Secret key is not configured" });
-        }
-
         const token = jwt.sign({ userId }, JWT_SECRET_KEY, { expiresIn: "7d" });
 
         if (token) {
