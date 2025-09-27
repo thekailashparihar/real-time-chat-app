@@ -70,10 +70,40 @@ export const signup = async (req, res) => {
         });
     }
 };
-export const login = (req, res) => {
-    res.send("login endpoint");
+export const login = async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const user = await User.findOne({ email }).select("+password");
+
+        if (!user)
+            return res.status(400).json({ message: "invalid credientials" });
+
+        if (!password)
+            return res.status(400).json({ message: "invalid password" });
+
+        const isPasswordMatch = await bcrypt.compare(password, user.password);
+        if (!isPasswordMatch)
+            return res.status(400).json({ message: "invalid credientials" });
+
+        generateToken(user._id, res);
+
+        return res.status(200).json({
+            status: "success",
+            message: "User logged in successfully",
+            data: { id: user._id, fullName: user.fullName, email: user.email },
+        });
+    } catch (error) {
+        console.error("error while login user", error.message);
+        return res.status(500).json({
+            status: "failed",
+            message: "error while login user",
+            detailed: error,
+        });
+    }
 };
 
-export const logout = (req, res) => {
-    res.send("logout endpoint");
+export const logout = async (_req, res) => {
+    await res.cookie("jwt", "", { maxAge: 0 });
+    return res.status(200).json({ message: "User Logout Successfully" });
 };
